@@ -8,22 +8,23 @@ const int screenHeight = 450;
 
 // player variables
 int playerX = 400;
-int playerY = 250;
+int playerY = 280;
 float playerR = 20.0;
 Color playerColor = BLACK;
-Color playerColors[] = {BLACK, BLUE, RED, PINK};
+Color playerColors[] = {BLACK, DARKBLUE, RED, PINK};
 int playerColorIndex = 0;
 bool touchingGround = true;
-int playerTerminalSpeed = 20;
+int playerTerminalSpeed = 10;
 float playerVelocityY = 0;
 float playerVelocityX = 0;
 int playerJumpHeight = 8.5;
-float yVelPerFrame = 0.3;
+float yVelPerFrame = 0.2;
 float xVelPerFrame = 0.3;
+float playerSpriteRotation = 0.0f;
 
-// ground variables
+// ground variables  
 int groundX = 0;
-int groundY = 270;
+int groundY = 300;
 int groundW = 800;
 int groundH = 200;
 Color groundColor = GREEN;
@@ -31,6 +32,8 @@ Color groundColor = GREEN;
 // word vars
 const float gravity = 5.5;
 float fricion = 0.97;
+
+// Images
 
 
 bool isPositive(float num) 
@@ -46,6 +49,9 @@ int main(void)
 
     SetTargetFPS(120);   // Set my game to run at 60 frames-per-second
 
+    Texture2D skyTexture = LoadTexture("resources/sky.jpg");
+    Texture2D groundTexture = LoadTexture("resources/terrain.png");
+
     // Main game loop
     while (!WindowShouldClose())    // Detect window close button or ESC key
     {
@@ -55,9 +61,29 @@ int main(void)
             ClearBackground(RAYWHITE);
 
             DrawFPS(7, 7);  // draw FPS
+            
+            // Drawing
+            DrawTexturePro
+            (
+                skyTexture,
+                Rectangle{0, 0, (float)skyTexture.width, (float)skyTexture.height}, // source rect (full image)
+                Rectangle{0, 0, (float)screenWidth, (float)skyTexture.height},     // dest rect (full screen)
+                Vector2{0, 0},                                                    // origin (no rotation/scaling offset)
+                0.0f,                                                            // rotation (no rotation)
+                WHITE                                                           // tint (no tint)
+            );
 
+            DrawTexturePro
+            (
+                groundTexture,
+                Rectangle{0, 0, (float)groundTexture.width, (float)groundTexture.height},       // source rect (full image)
+                Rectangle{(float)groundX, (float)groundY, (float)groundW, (float)groundH},     // dest rect (full screen)
+                Vector2{0, 0},                                                                // origin (no rotation/scaling offset)
+                0.0f,                                                                        // rotation (no rotation)
+                WHITE                                                                       // tint (no tint)
+            );
             DrawCircle(playerX, playerY, playerR, playerColors[playerColorIndex]);  // draw player
-            DrawRectangle(groundX, groundY, groundW, groundH, groundColor);
+            // DrawRectangle(groundX, groundY, groundW, groundH, groundColor); // draw ground  
 
             // Update player's velocity to gravity
             playerVelocityY += yVelPerFrame;
@@ -94,9 +120,12 @@ int main(void)
 
             if (!touchingGround)
             {
-                xVelPerFrame = 0.1;
+                xVelPerFrame = 0.07;
             }
-
+            else
+            {
+                xVelPerFrame = 0.2;
+            }
 
             if (IsKeyPressed(KEY_C))
             {
@@ -150,7 +179,7 @@ int main(void)
         EndDrawing();
     }
 
-
+    UnloadTexture(skyTexture);  // Unload texture
     CloseWindow();        // Close window 
 
     return 0;
