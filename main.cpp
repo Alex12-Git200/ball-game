@@ -17,10 +17,9 @@ bool touchingGround = true;
 int playerTerminalSpeed = 20;
 float playerVelocityY = 0;
 float playerVelocityX = 0;
-float playerDampening  = 0.9f;
-int playerJumpHeight = 10;
-float yVelPerFrame = 0.7;
-
+int playerJumpHeight = 8.5;
+float yVelPerFrame = 0.3;
+float xVelPerFrame = 0.3;
 
 // ground variables
 int groundX = 0;
@@ -30,7 +29,7 @@ int groundH = 200;
 Color groundColor = GREEN;
 
 // word vars
-const float gravity = 6;
+const float gravity = 5.5;
 float fricion = 0.97;
 
 
@@ -45,7 +44,7 @@ int main(void)
 
     InitWindow(screenWidth, screenHeight, "Ball Game");
 
-    SetTargetFPS(60);   // Set my game to run at 60 frames-per-second
+    SetTargetFPS(120);   // Set my game to run at 60 frames-per-second
 
     // Main game loop
     while (!WindowShouldClose())    // Detect window close button or ESC key
@@ -72,11 +71,11 @@ int main(void)
             // Update player's X position based on velocity
             playerX += playerVelocityX;
 
-            if (playerVelocityX > playerTerminalSpeed - 0.5f)
+            if (playerVelocityX > playerTerminalSpeed)
             {
                 playerVelocityX = playerTerminalSpeed;  // Cap the velocity to terminal speed
             }
-            if ( playerVelocityX < -playerTerminalSpeed - 0.5f)
+            if (playerVelocityX < -playerTerminalSpeed)
             {
                 playerVelocityX = -playerTerminalSpeed;  // Cap the velocity to terminal speed
             }
@@ -95,7 +94,7 @@ int main(void)
 
             if (!touchingGround)
             {
-                yVelPerFrame = 0.4;
+                xVelPerFrame = 0.1;
             }
 
 
@@ -109,7 +108,7 @@ int main(void)
             }
             if (IsKeyDown(KEY_RIGHT))
             {
-                playerVelocityX += 0.5f;  
+                playerVelocityX += xVelPerFrame;  
             }
             if (!IsKeyDown(KEY_RIGHT))
             {
@@ -124,7 +123,7 @@ int main(void)
             }
             if (IsKeyDown(KEY_LEFT))
             {
-                playerVelocityX -= 0.5f;  
+                playerVelocityX -= xVelPerFrame;  
             }
             if (!IsKeyDown(KEY_LEFT))
             {
