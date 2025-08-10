@@ -11,3 +11,7 @@ Right/Left arrow - go right/left
 Space - jump
 
 NOTE: Code is messy and unsafe
+
+Compile with:
+
+g++ main.cpp -o main -lraylib -lGL -lm -lpthread -ldl -lrt -lX11
