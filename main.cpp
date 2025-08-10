@@ -1,5 +1,6 @@
 #include "raylib.h"
 #include <iostream>
+#include <cmath>
 
 // VARIABLES
 
@@ -44,6 +45,25 @@ float friction = 0.97;
 Rectangle leftWall = { -50, 0, 50, screenHeight }; 
 Texture2D ground2Texture;
 
+
+class Slope
+{
+public:
+    void draw(float degrees, Color color, Vector2 pos, float size)
+    {
+        // Convert degrees to radians
+        double angleRad = degrees * (PI / 180.0f);
+
+        // Calculate vertices
+        Vector2 v1 = pos;                           // bottom-left
+        Vector2 v2 = { pos.x + size, pos.y };       // bottom-right
+        Vector2 v3 = { pos.x + size, pos.y - tan(angleRad) * size }; // top-right
+
+        // Draw the triangle
+        DrawTriangle(v1, v2, v3, color);
+    }
+};
+
 void drawNextGround()
 {
     groundX = 0;
@@ -64,7 +84,8 @@ int main(void)
 
     Texture2D skyTexture = LoadTexture("resources/sky.jpg");
     Texture2D groundTexture = LoadTexture("resources/terrain.png");
-    ground2Texture = LoadTexture("resources/terrain.png");      
+    ground2Texture = LoadTexture("resources/terrain.png");     
+    Slope slope;
 
     // Main game loop
     while (!WindowShouldClose())    // Detect window close button or ESC key
@@ -108,6 +129,8 @@ int main(void)
                 WHITE                                                                       // tint (no tint)
             );
             DrawCircle(playerX, playerY, playerR, playerColors[playerColorIndex]);  // draw player
+            slope.draw(20, BLUE, {100, 300}, 150);
+
             // DrawRectangle(groundX, groundY, groundW, groundH, groundColor); // draw ground  
 
             // Update player's velocity to gravity
