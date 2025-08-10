@@ -7,8 +7,9 @@ const int screenWidth = 800;
 const int screenHeight = 450;
 
 // player variables
-int playerX = 400;
-int playerY = 280;
+float playerX = 400;
+float playerY = 280;
+float playerS = 1.0f;
 float playerR = 20.0;
 Color playerColor = BLACK;
 Color playerColors[] = {BLACK, DARKBLUE, RED, PINK};
@@ -17,24 +18,36 @@ bool touchingGround = true;
 int playerTerminalSpeed = 10;
 float playerVelocityY = 0;
 float playerVelocityX = 0;
-int playerJumpHeight = 8.5;
+const float basePlayerJumpHeight = 8.5f;
 float yVelPerFrame = 0.2;
 float xVelPerFrame = 0.3;
 float playerSpriteRotation = 0.0f;
+bool isMovingR = false;
+const float baseRadius = 20.0f;
+float playerJumpHeight = 8.5f;
 
 // ground variables  
 int groundX = 0;
 int groundY = 300;
 int groundW = 800;
 int groundH = 200;
-Color groundColor = GREEN;
 
-// word vars
+// ground 2 variables
+int ground2X = groundX + groundW;
+int ground2Y = groundY;
+int ground2W = groundW;
+int ground2H = groundH;
+
+// world vars
 const float gravity = 5.5;
-float fricion = 0.97;
+float friction = 0.97;
+Rectangle leftWall = { -50, 0, 50, screenHeight }; 
+Texture2D ground2Texture;
 
-// Images
-
+void drawNextGround()
+{
+    groundX = 0;
+}
 
 bool isPositive(float num) 
 {
@@ -46,16 +59,20 @@ int main(void)
 {
 
     InitWindow(screenWidth, screenHeight, "Ball Game");
-
+    
     SetTargetFPS(120);   // Set my game to run at 60 frames-per-second
 
     Texture2D skyTexture = LoadTexture("resources/sky.jpg");
     Texture2D groundTexture = LoadTexture("resources/terrain.png");
+    ground2Texture = LoadTexture("resources/terrain.png");      
 
     // Main game loop
     while (!WindowShouldClose())    // Detect window close button or ESC key
     {
         // Update
+        ground2X = groundX + groundW;
+
+
         BeginDrawing();
 
             ClearBackground(RAYWHITE);
@@ -72,12 +89,20 @@ int main(void)
                 0.0f,                                                            // rotation (no rotation)
                 WHITE                                                           // tint (no tint)
             );
-
             DrawTexturePro
             (
                 groundTexture,
-                Rectangle{0, 0, (float)groundTexture.width, (float)groundTexture.height},       // source rect (full image)
-                Rectangle{(float)groundX, (float)groundY, (float)groundW, (float)groundH},     // dest rect (full screen)
+                Rectangle{0, 0, (float)ground2Texture.width, (float)ground2Texture.height},                       // source rect (full image)
+                Rectangle{(float)groundX, (float)groundY, (float)ground2W, (float)groundH},     // dest rect (full screen)
+                Vector2{0, 0},                                                                                  // origin (no rotation/scaling offset)
+                0.0f,                                                                                          // rotation (no rotation)
+                WHITE                                                                                         // tint (no tint)
+            );
+            DrawTexturePro
+            (
+                ground2Texture,
+                Rectangle{0, 0, (float)ground2Texture.width, (float)ground2Texture.height},       // source rect (full image)
+                Rectangle{(float)ground2X, (float)ground2Y, (float)ground2W, (float)ground2H},     // dest rect (full screen)
                 Vector2{0, 0},                                                                // origin (no rotation/scaling offset)
                 0.0f,                                                                        // rotation (no rotation)
                 WHITE                                                                       // tint (no tint)
@@ -106,6 +131,38 @@ int main(void)
                 playerVelocityX = -playerTerminalSpeed;  // Cap the velocity to terminal speed
             }
 
+            if (playerVelocityX > 0)
+            {
+                isMovingR = true;
+            }
+            else
+            {
+                isMovingR = false;
+            }
+
+            // invisible wall check
+            if (CheckCollisionCircleRec((Vector2){(float)playerX, (float)playerY}, playerR, leftWall)) 
+            {
+                if (playerVelocityX < 0)
+                {
+                    playerVelocityX = 0;
+                }
+                
+                playerX = (int)(leftWall.x + leftWall.width + playerR); // push player right, outside the left wall
+            }
+
+            
+            if (playerX + playerR > screenWidth && isMovingR)
+            {
+                playerX = playerX - (playerX - (screenWidth - playerR));
+                groundX -= playerVelocityX;
+            }
+
+            if (groundX < -screenWidth)
+            {
+
+            }
+
             // checking if player is touching the ground
             if (playerY + playerR >= groundY)
             {
@@ -125,6 +182,12 @@ int main(void)
             else
             {
                 xVelPerFrame = 0.2;
+            }
+
+            if (ground2X < 0)
+            {
+                ground2X = ground2X + groundW;
+                drawNextGround();
             }
 
             if (IsKeyPressed(KEY_C))
@@ -147,7 +210,7 @@ int main(void)
                 }
                 if (playerVelocityX > 0 && touchingGround)
                 {
-                    playerVelocityX *= fricion;
+                    playerVelocityX *= friction;
                 }
             }
             if (IsKeyDown(KEY_LEFT))
@@ -162,7 +225,7 @@ int main(void)
                 }
                 if (playerVelocityX < 0 && touchingGround)
                 {
-                    playerVelocityX *= fricion;
+                    playerVelocityX *= friction;
                 }  
             }
             if (IsKeyPressed(KEY_SPACE) && touchingGround)
@@ -170,17 +233,50 @@ int main(void)
                 playerVelocityY = -playerJumpHeight;  // Set the player's velocity to jump height
                 touchingGround = false;  
             }
+            if (IsKeyDown(KEY_UP))
+            {
+                playerS += 0.045f;
+                if (playerS > 5)
+                {
+                    playerS = 5;
+                }
+            }
+            if (IsKeyDown(KEY_DOWN))
+            {
+                playerS -= 0.045f;
+
+                if (playerS < 0.3)
+                {
+                    playerS = 0.3;
+                }
+            }
+            playerR = baseRadius * playerS;
+            friction = 0.97f + (playerS * 0.01f); // more friction at bigger sizes, but clamp it
+            playerTerminalSpeed = 10 / (playerS);
+            playerJumpHeight = basePlayerJumpHeight;
+            xVelPerFrame = 0.2 / playerS;
+            if (friction < 0.85f) friction = 0.85f;
+            if (friction > 0.99f) friction = 0.99f;
+            if (playerTerminalSpeed < 3.5f) playerTerminalSpeed = 3.5f;
+            
+            
+
+            playerJumpHeight = basePlayerJumpHeight - (playerS / 2);
+
 
             // debug
 
-            std::cout << "Y: " << playerY << " | X: " << playerX << " | VY: " << playerVelocityY << " | VX: " << playerVelocityX << "| TG: " << touchingGround << "\n";
+            std::cout << "Y: " << playerY << " | X: " << playerX << " | VY: " << playerVelocityY << " | VX: " << playerVelocityX << "| TG: " << touchingGround << "| GX: " << groundX << "| G2X: " << ground2X << "\n";
 
 
         EndDrawing();
     }
 
     UnloadTexture(skyTexture);  // Unload texture
+    UnloadTexture(ground2Texture);
+    UnloadTexture(ground2Texture);
     CloseWindow();        // Close window 
 
     return 0;
 }
+
